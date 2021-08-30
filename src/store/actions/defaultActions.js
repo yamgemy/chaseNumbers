@@ -21,10 +21,11 @@ export const getIpsumFailed = e => {
   return {type: GET_IPSUM_FAILED, payload: e};
 };
 
-export const moveCursorToNextComplete = nextUncoveredIdx => {
+export const moveCursorToNext = (nextUncoveredIdx, duration) => {
   return {
     type: MOVE_CURSOR_NEXT,
-    nextUncoveredIdx,
+    nextUncoveredIdx: nextUncoveredIdx,
+    duration: duration,
   };
 };
 

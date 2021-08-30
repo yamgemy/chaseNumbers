@@ -1,14 +1,19 @@
-import 'rxjs';
 import {combineEpics, ofType} from 'redux-observable';
-import {from, mergeMap, concatMap} from 'rxjs';
-import {map, catchError} from 'rxjs/operators';
-import {GENERATE_NEW_NUMBER, MOVE_CURSOR_NEXT} from '../types';
+import {from, mergeMap, concatMap, of} from 'rxjs';
+//import {Observable, Scheduler} from 'rxjs/Observable';
+import {map, catchError, finalize, delay} from 'rxjs/operators';
+import {
+  ELEMENT_COMPLETE,
+  GENERATE_NEW_NUMBER,
+  MOVE_CURSOR_NEXT,
+} from '../types';
 import axios from 'axios';
 import {
   getIpsumSuccess,
   getIpsumFailed,
   setElementCompleted,
-  moveCursorToNextComplete,
+  moveCursorToNext,
+  moveCursorFailed,
 } from '../actions/defaultActions';
 
 //const url = 'https://baconipsum.com/api/?type=all-meat&paras=1';
@@ -29,12 +34,10 @@ import {
 
 async function fakeApiCall() {
   return new Promise(resolve => {
-    setTimeout(() => resolve('someData'), 2000);
+    setTimeout(() => resolve('someData'), 2000); //this ms doesnt delay
   });
 }
 
-//'map' is an rxjs operator
-//an rxjs operator
 const generateNewNumberEpic = (action$, state$) => {
   return action$.pipe(
     ofType(GENERATE_NEW_NUMBER),
@@ -47,29 +50,50 @@ const generateNewNumberEpic = (action$, state$) => {
   );
 };
 
-async function takeTime() {
+async function takeTime(duration) {
   return new Promise(resolve => {
-    setTimeout(() => resolve('move cursor finished', 3000));
+    if (duration === 0) {
+      resolve('immediately move cursor');
+    } else {
+      setTimeout(() => resolve('move cursor finished', duration));
+    }
   });
 }
 
-const moveCursorToNextEpic = (action$, state$) => {
+const moveCursorToNextEpic = (action$, state$, {store}) => {
   return action$.pipe(
     ofType(MOVE_CURSOR_NEXT),
     concatMap(action => {
-      return from(takeTime()).pipe(
-        map(result => setElementCompleted(action.nextUncoveredIdx)),
-        //map(() => moveCursorToNextComplete(action.nextUncoveredIdx + 1)),
-        catchError(e => moveCursorFailed(e)),
-      );
+      //creates an Observable with 'of', consist of 2 consecutive actions
+      return of(
+        setElementCompleted(action.nextUncoveredIdx),
+        moveCursorToNext(action.nextUncoveredIdx + 1, 3500),
+      ).pipe(delay(3500));
+      //this code works but it keeps dispatching movecurosrtonext\
+      //use takeuntil..... https://redux-observable.js.org/docs/recipes/Cancellation.html
     }),
-    // .concatMap(action =>
-    //   moveCursorToNextComplete(action.nextUncoveredIdx + 1),
-    // ),
   );
 };
 
+// finalize(() => {
+//   //TODO
+//   console.log('yo store ', store);
+//   console.log('yo state ', state$);
+// }),
+
+// const moveCursorCompletedEpic = (action$, state$) => {
+//   return action$.pipe(
+//     ofType(ELEMENT_COMPLETE),
+//     concatMap(action => {
+//       return from(takeTime(3000)).pipe(
+//         map(x => moveCursorToNext(action.nextUncoveredIdx + 1, 4000)),
+//         catchError(e => moveCursorFailed(e)),
+//       );
+//     }),
+//   );
+// };
 export default RootEpic = combineEpics(
   generateNewNumberEpic,
   moveCursorToNextEpic,
+  // moveCursorCompletedEpic,
 );

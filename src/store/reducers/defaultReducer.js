@@ -23,6 +23,10 @@ export const defaultReducer = (state = initState, action) => {
     case ELEMENT_COMPLETE:
       const currentIdxToComplete = action.nextUncoveredIdx;
       const updatedElement = [...state.myNumberList][currentIdxToComplete];
+      if (!updatedElement) {
+        console.log('element not found');
+        return {...state};
+      }
       updatedElement.covered = true;
 
       const newArr = [

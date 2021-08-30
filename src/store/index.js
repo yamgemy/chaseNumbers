@@ -3,7 +3,13 @@ import {createStore, applyMiddleware, combineReducers} from 'redux';
 import {defaultReducer} from './reducers/defaultReducer';
 import RootEpic from './epics/index';
 
-const epicMiddleware = createEpicMiddleware();
+const epicMiddleware = createEpicMiddleware({
+  dependencies: {
+    get store() {
+      return store;
+    },
+  },
+});
 
 const rootReducer = combineReducers({defaultReducer});
 

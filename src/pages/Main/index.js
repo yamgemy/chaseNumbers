@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {
   getNewNumber,
-  moveCursorToNextComplete,
+  moveCursorToNext,
 } from '../../store/actions/defaultActions';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -16,7 +16,9 @@ export default () => {
   useEffect(() => {
     if (myNumberList.length === 2) {
       //invokes epic with MOVE_CURSOR_NEXT
-      dispatch(moveCursorToNextComplete(0)); //0 is nextUncoveredIdx
+      const idx = 0;
+      const duration = myNumberList[idx].value * 40; // default is 10, , times 40 = 4000, ie 4 seconds
+      dispatch(moveCursorToNext(0, duration)); //0 is nextUncoveredIdx
     }
   }, [myNumberList.length]);
 

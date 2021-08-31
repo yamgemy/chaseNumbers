@@ -64,13 +64,24 @@ const moveCursorToNextEpic = (action$, state$, {store}) => {
   return action$.pipe(
     ofType(MOVE_CURSOR_NEXT),
     concatMap(action => {
-      //creates an Observable with 'of', consist of 2 consecutive actions
-      return of(
-        setElementCompleted(action.nextUncoveredIdx),
-        moveCursorToNext(action.nextUncoveredIdx + 1, 3500),
-      ).pipe(delay(3500));
-      //this code works but it keeps dispatching movecurosrtonext\
-      //use takeuntil..... https://redux-observable.js.org/docs/recipes/Cancellation.html
+      const numberLength = state$.value.defaultReducer.myNumberList.length;
+      if (action.nextUncoveredIdx + 1 <= numberLength - 1) {
+        //creates an Observable with 'of', consist of 2 consecutive actions
+
+        //TODO
+        //do something with marker ref passed into action payload?
+
+        return of(
+          setElementCompleted(action.nextUncoveredIdx),
+          moveCursorToNext(action.nextUncoveredIdx + 1, 3500),
+        ).pipe(delay(3500));
+      } else {
+        return of(setElementCompleted(action.nextUncoveredIdx)).pipe(
+          delay(3500),
+        );
+      }
+      //consider using ?
+      //takeuntil..... https://redux-observable.js.org/docs/recipes/Cancellation.html
     }),
   );
 };
